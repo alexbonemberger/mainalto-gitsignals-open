@@ -1,0 +1,10 @@
+{
+  "schema": "mainalto.gitsignals.envelope/2",
+  "request_id": "example-shape-only-0001",
+  "key_id": "<SHA256_DER_PUBLIC_KEY_64_HEX>",
+  "algorithm": "RSA-OAEP-256+A256GCM",
+  "wrapped_key": "<BASE64_OF_RSA_OAEP_WRAPPED_32_BYTE_AES_KEY>",
+  "nonce": "<BASE64_OF_12_RANDOM_BYTES>",
+  "tag": "<BASE64_OF_16_GCM_TAG>",
+  "ciphertext": "<BASE64_OF_AUTHENTICATED_ENCRYPTED_V1_JSON>"
+}

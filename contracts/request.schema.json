@@ -1,18 +1,57 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/alexbonemberger/mainalto-gitsignals-open/blob/main/contracts/request.schema.json",
-  "title": "MainAlto GitSignals request v1",
+  "title": "MainAlto GitSignals encrypted request envelope v2",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "request_id", "operation", "chat", "capability", "objective", "model", "expires_utc"],
+  "required": [
+    "schema",
+    "request_id",
+    "key_id",
+    "algorithm",
+    "wrapped_key",
+    "nonce",
+    "tag",
+    "ciphertext"
+  ],
   "properties": {
-    "schema": {"const": "mainalto.gitsignals.request/1"},
-    "request_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{7,63}$"},
-    "operation": {"const": "capability.propose"},
-    "chat": {"type": "string", "minLength": 1, "maxLength": 100},
-    "capability": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,63}$"},
-    "objective": {"type": "string", "minLength": 8, "maxLength": 1800},
-    "model": {"const": "qwen3-vl:2b-instruct"},
-    "expires_utc": {"type": "string", "format": "date-time"}
+    "schema": {
+      "const": "mainalto.gitsignals.envelope/2"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{7,63}$"
+    },
+    "key_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "algorithm": {
+      "const": "RSA-OAEP-256+A256GCM"
+    },
+    "wrapped_key": {
+      "type": "string",
+      "minLength": 320,
+      "maxLength": 760,
+      "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 16,
+      "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 24,
+      "maxLength": 24,
+      "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+    },
+    "ciphertext": {
+      "type": "string",
+      "minLength": 24,
+      "maxLength": 11000,
+      "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+    }
   }
 }

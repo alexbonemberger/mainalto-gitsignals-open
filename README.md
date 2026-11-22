@@ -1,34 +1,43 @@
-# MainAlto GitSignals (public transport)
+# MainAlto GitSignals — canal público criptografado
 
-**State: SOURCE_ONLY / NOT_INSTALLED / NO_LOCAL_EXECUTION.** This repository is a transport for *requests and non-sensitive receipts*, not a command interpreter or an authority to run software.
+**Estado: CONTRATO V2 PUBLICADO / CHAVE PÚBLICA LOCAL AINDA NÃO REGISTRADA / NÃO ATIVADO.**
 
-## Boundary
+Este repositório público transporta exclusivamente **sinais criptografados e metadados mínimos**. Código privado, logs locais, prompts em texto aberto, segredos e resultados sensíveis não são publicados. O código do motor permanece em `alexbonemberger/chat-automation` (privado).
 
-- Controller: ChatGPT with GitHub write access, after operator-selected scope.
-- Producer: local Qwen through the existing **private** ChatAutomation C# Windows runtime.
-- Output: proposed `.cs` source in local quarantine; proposal delivered by existing Edge/UIA ChatAutomation.
-- Approval: isolated candidate tests may be delegated to ChatGPT **only in a genuinely isolated, unprivileged environment**. Any additional Windows permissions, host code execution, installation, production mutation, or privileged effects require explicit operator approval bound to a source hash and effect class.
-- This first increment **does not execute generated code**, run Qwen, install a worker, send UIA messages, or grant authorization merely by the presence of a file here.
+## Proteção de confidencialidade
 
-## Request contract (v1)
+1. A **chave privada RSA** fica exclusivamente no Windows do operador; nunca será colocada no GitHub, no chat, em Actions ou em recibos.
+2. A **chave pública RSA (SPKI PEM)** pode ser publicada em `keys/active-public.pem`, após ser obtida do Windows. O arquivo ainda não existe: NÃO inventar chave nem aceitar chave de identidade desconhecida.
+3. Para cada solicitação, o controlador gera 32 bytes aleatórios (AES-256-GCM), nonce aleatório de 12 bytes e tag de 16 bytes. A chave AES é cifrada com RSA-OAEP-SHA256.
+4. O envelope `requests/<request_id>.json` contém somente `schema`, `request_id`, `key_id`, `algorithm`, `wrapped_key`, `nonce`, `tag` e `ciphertext`.
+5. `key_id` = SHA-256 em hex minúsculo de `RSA.ExportSubjectPublicKeyInfo()` (DER), não hash dos bytes PEM.
+6. AAD = UTF-8 da string exata `mainalto.gitsignals.envelope/2\n<request_id>\n<key_id>\n`. Uma alteração de ID/chave invalida a autenticação GCM.
+7. Dentro do ciphertext: JSON v1 **privado** com `schema=mainalto.gitsignals.request/1`, `request_id`, `operation=capability.propose`, `chat`, `capability`, `objective`, `model=qwen3-vl:2b-instruct`, `expires_utc`. Todos os campos internos são validados **somente após** autenticação e descriptografia.
+8. Cada ID é único e imutável. O receptor valida branch, hash dos bytes recebidos, TTL (máximo 7 dias), conversa exata e `STOP`, sem replay automático de efeito incerto.
 
-Only files under `requests/<request_id>.json` with an exact single immutable ID, `schema: mainalto.gitsignals.request/1`, `operation: capability.propose`, `model: qwen3-vl:2b-instruct`, `chat`, `capability`, `objective`, and future `expires_utc` are eligible. ID and names use `[a-z0-9-]` and bounded lengths. The local consumer pins the Git commit/blob and verifies exact chat alias before any interaction. A changed request ID is a conflict, not an update.
+## O que é público
 
-`capability.propose` means **produce a review-only C# source candidate**. It must not be interpreted as an instruction to compile, execute, install, delete, send unrelated messages, or invoke shell commands. Prompt and model output are untrusted text.
+- `contracts/request.schema.json`: somente a estrutura do **envelope cifrado** (v2).
+- `examples/envelope.shape.json`: exemplo estrutural **não cifrado de verdade**, não despachável.
+- `keys/active-public.pem`: chave pública, somente **depois** de fornecida pelo Windows.
+- `requests/`: futuramente, exclusivamente envelopes cifrados.
+- `.github/workflows/`: testes de estrutura e transporte público; não podem ler segredos locais ou buscar o código privado.
+- Nenhum `receipt.json` detalhado ou `proposal.cs` local deve ser publicado aqui.
 
-The ChatAutomation branch carrying the runtime is isolated from the existing main, candidate chess-cycle and MainAlto R14-R25 artifacts. `qwen-autorepair-01` remains immutable.
+## Autoridade e limite de segurança
 
-## One-way events in initial delivery
+**Criptografia não é autorização.** Qualquer pessoa com acesso à chave pública pode criar ciphertext válido; o executor exige origem Git permitida, request_id único, escopo `capability.propose` e autorização local. Publicar um sinal NÃO permite execução C# no Windows, instalação, alteração de arquivos de produção nem ampliação de permissões.
 
-- `requests/`: controller -> local C# receiver, one unique filename per request.
-- Local `proposal.cs`, `request.json`, `receipt.json`: receiver journal in user-controlled state folder; **not** posted to this public repository.
-- Edge/UIA: receiver -> controlling conversation, with request ID, source digest, full source when within size limit, and explicit `PROPOSAL_ONLY` status.
-- Further authorizations and receipts are **not yet implemented**. They must not be inferred from Git comments, free text, or an unverified UIA click.
+O Qwen pode **propor** C#; testes isolados exigem uma sandbox efetiva e a delegação já definida. Efeitos locais reais ou novas permissões exigem aprovação explícita do operador vinculada ao SHA-256 da proposta e ao escopo.
 
-## Usage policy
+## Compatibilidade e ativação
 
-No secrets, local user documents, private paths, authentication tokens, or privileged operation parameters in this public repository. Configure stop and target conversation locally. The local watcher is opt-in, not started by this repository. The host must confirm an operator-enabled session before it can send UIA messages. Any uncertain dispatch is terminal for that request; no automatic replay.
+O formato antigo de solicitações v1 em texto claro está **desabilitado** para o consumidor v2. Não existe sinal operacional em `requests/`. A instalação do consumidor e o registro da chave pública dependem de operação local autorizada, que ainda não ocorreu.
 
-## Evidence levels
+### Referências
 
-`SOURCE_COMMITTED` != `CI_PASS` != `WINDOWS_INSTALLED` != `UIA_MESSAGE_CONFIRMED` != `CAPABILITY_FUNCTIONAL`. Never promote a stage based only on a successful commit, build, or the model's assertion.
+- [RSA OAEP SHA-256 no .NET](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsaencryptionpadding.oaepsha256)
+- [AES-GCM no .NET](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm)
+- [GitHub Actions e uso público gratuito](https://docs.github.com/en/actions/concepts/billing-and-usage)
+
+**Evidência:** `PUBLIC_CONTRACT_CI=PASS` não comprova motor privado compilado, criptografia ponta-a-ponta, UIA nem ciclo autônomo.

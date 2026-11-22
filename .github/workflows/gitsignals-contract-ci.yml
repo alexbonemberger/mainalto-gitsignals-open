@@ -1,11 +1,12 @@
-name: GitSignals public contract smoke
+name: GitSignals public encrypted-contract smoke
 on:
   push:
     branches: [main]
     paths:
       - 'contracts/request.schema.json'
-      - 'examples/request.example.json'
+      - 'examples/envelope.shape.json'
       - '.github/workflows/gitsignals-contract-ci.yml'
+      - 'README.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,18 +25,20 @@ jobs:
       - name: Verify .NET 8 SDK is available (no private source)
         shell: bash
         run: dotnet --list-sdks
-      - name: Validate JSON contract and non-dispatching example
+      - name: Validate encrypted envelope schema (no secrets or private source)
         shell: python
         run: |
           import json
           from pathlib import Path
           schema = json.loads(Path('contracts/request.schema.json').read_text(encoding='utf-8'))
-          example = json.loads(Path('examples/request.example.json').read_text(encoding='utf-8'))
-          fields = set(schema['required'])
-          assert set(example) == fields
-          assert example['schema'] == schema['properties']['schema']['const']
-          assert example['operation'] == 'capability.propose'
-          assert example['model'] == 'qwen3-vl:2b-instruct'
-          assert example['chat'] == 'REPLACE_WITH_REGISTERED_CHAT_ALIAS'
-          assert not any(s in json.dumps(example).lower() for s in ['password', 'token='])
-          print('GITSIGNALS_PUBLIC_CONTRACT=PASS SOURCE_EXECUTIONS=0 UIA=0 OLLAMA=0')
+          example = json.loads(Path('examples/envelope.shape.json').read_text(encoding='utf-8'))
+          required = set(schema['required'])
+          assert set(example) == required
+          assert schema['additionalProperties'] is False
+          assert example['schema'] == 'mainalto.gitsignals.envelope/2'
+          assert example['algorithm'] == 'RSA-OAEP-256+A256GCM'
+          assert set(['chat', 'objective', 'operation', 'model', 'capability']).isdisjoint(example)
+          assert all(example[x].startswith('<') for x in ('key_id', 'wrapped_key', 'nonce', 'tag', 'ciphertext'))
+          assert not Path('examples/request.example.json').exists()
+          assert not Path('keys/private.pem').exists()
+          print('GITSIGNALS_ENVELOPE_CONTRACT=PASS PUBLIC_ONLY=1 MODEL_CALLS=0 UIA_SENDS=0')
