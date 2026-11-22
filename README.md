@@ -1,13 +1,13 @@
 # MainAlto GitSignals — canal público criptografado
 
-**Estado: CONTRATO V2 PUBLICADO / CHAVE PÚBLICA LOCAL AINDA NÃO REGISTRADA / NÃO ATIVADO.**
+**Estado: CONTRATO V2 PUBLICADO / CHAVE PÚBLICA REGISTRADA E PINADA / MOTOR LOCAL NÃO ATIVADO.**
 
 Este repositório público transporta exclusivamente **sinais criptografados e metadados mínimos**. Código privado, logs locais, prompts em texto aberto, segredos e resultados sensíveis não são publicados. O código do motor permanece em `alexbonemberger/chat-automation` (privado).
 
 ## Proteção de confidencialidade
 
 1. A **chave privada RSA** fica exclusivamente no Windows do operador; nunca será colocada no GitHub, no chat, em Actions ou em recibos.
-2. A **chave pública RSA (SPKI PEM)** pode ser publicada em `keys/active-public.pem`, após ser obtida do Windows. O arquivo ainda não existe: NÃO inventar chave nem aceitar chave de identidade desconhecida.
+2. A **chave pública RSA (SPKI PEM)** foi registrada pelo operador em `keys/active-public.pem`. `key_id` verificado: `9959198b05f3996c601fb1be9830b59fbd2299142773847a8265b6fbf4b00147`. Uma substituição exige aprovação explícita da rotação e nova verificação do digest; nunca inferir autoridade apenas da presença da chave no GitHub.
 3. Para cada solicitação, o controlador gera 32 bytes aleatórios (AES-256-GCM), nonce aleatório de 12 bytes e tag de 16 bytes. A chave AES é cifrada com RSA-OAEP-SHA256.
 4. O envelope `requests/<request_id>.json` contém somente `schema`, `request_id`, `key_id`, `algorithm`, `wrapped_key`, `nonce`, `tag` e `ciphertext`.
 5. `key_id` = SHA-256 em hex minúsculo de `RSA.ExportSubjectPublicKeyInfo()` (DER), não hash dos bytes PEM.
@@ -19,7 +19,7 @@ Este repositório público transporta exclusivamente **sinais criptografados e m
 
 - `contracts/request.schema.json`: somente a estrutura do **envelope cifrado** (v2).
 - `examples/envelope.shape.json`: exemplo estrutural **não cifrado de verdade**, não despachável.
-- `keys/active-public.pem`: chave pública, somente **depois** de fornecida pelo Windows.
+- `keys/active-public.pem`: chave pública RSA-3072 fornecida pelo Windows e verificada por SHA-256 do SPKI DER; a chave privada não é publicada.
 - `requests/`: futuramente, exclusivamente envelopes cifrados.
 - `.github/workflows/`: testes de estrutura e transporte público; não podem ler segredos locais ou buscar o código privado.
 - Nenhum `receipt.json` detalhado ou `proposal.cs` local deve ser publicado aqui.

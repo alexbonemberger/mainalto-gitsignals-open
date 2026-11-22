@@ -7,6 +7,7 @@ on:
       - 'examples/envelope.shape.json'
       - '.github/workflows/gitsignals-contract-ci.yml'
       - 'README.md'
+      - 'keys/active-public.pem'
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,4 +42,14 @@ jobs:
           assert all(example[x].startswith('<') for x in ('key_id', 'wrapped_key', 'nonce', 'tag', 'ciphertext'))
           assert not Path('examples/request.example.json').exists()
           assert not Path('keys/private.pem').exists()
+          import base64, hashlib
+          pem = Path('keys/active-public.pem').read_text(encoding='utf-8').strip()
+          assert pem.startswith('-----BEGIN PUBLIC KEY-----')
+          assert pem.endswith('-----END PUBLIC KEY-----')
+          inner = ''.join(pem.splitlines()[1:-1])
+          der = base64.b64decode(inner, validate=True)
+          assert hashlib.sha256(der).hexdigest() == '9959198b05f3996c601fb1be9830b59fbd2299142773847a8265b6fbf4b00147'
+          assert len(der) == 422
+          print('GITSIGNALS_PUBLIC_KEY_PIN=PASS KEY_ID=9959198b05f3996c601fb1be9830b59fbd2299142773847a8265b6fbf4b00147')
+
           print('GITSIGNALS_ENVELOPE_CONTRACT=PASS PUBLIC_ONLY=1 MODEL_CALLS=0 UIA_SENDS=0')
