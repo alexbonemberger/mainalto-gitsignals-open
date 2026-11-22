@@ -8,6 +8,7 @@ on:
       - '.github/workflows/gitsignals-contract-ci.yml'
       - 'README.md'
       - 'keys/active-public.pem'
+      - 'tests/interop/envelope-v2.public-interop.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -52,4 +53,15 @@ jobs:
           assert len(der) == 422
           print('GITSIGNALS_PUBLIC_KEY_PIN=PASS KEY_ID=9959198b05f3996c601fb1be9830b59fbd2299142773847a8265b6fbf4b00147')
 
+          vector = json.loads(Path('tests/interop/envelope-v2.public-interop.json').read_text(encoding='utf-8'))
+          assert set(vector) == required
+          assert vector['request_id'] == 'gitsignals-interop-0001'
+          assert vector['key_id'] == '9959198b05f3996c601fb1be9830b59fbd2299142773847a8265b6fbf4b00147'
+          assert vector['schema'] == 'mainalto.gitsignals.envelope/2'
+          assert vector['algorithm'] == 'RSA-OAEP-256+A256GCM'
+          assert len(base64.b64decode(vector['wrapped_key'], validate=True)) == 384
+          assert len(base64.b64decode(vector['nonce'], validate=True)) == 12
+          assert len(base64.b64decode(vector['tag'], validate=True)) == 16
+          assert not Path('requests').exists()
+          print('GITSIGNALS_INTEROP_CIPHERTEXT=VALID_STRUCTURE NON_OPERATIONAL=1')
           print('GITSIGNALS_ENVELOPE_CONTRACT=PASS PUBLIC_ONLY=1 MODEL_CALLS=0 UIA_SENDS=0')

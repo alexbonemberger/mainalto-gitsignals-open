@@ -1,0 +1,10 @@
+{
+  "schema": "mainalto.gitsignals.envelope/2",
+  "request_id": "gitsignals-interop-0001",
+  "key_id": "9959198b05f3996c601fb1be9830b59fbd2299142773847a8265b6fbf4b00147",
+  "algorithm": "RSA-OAEP-256+A256GCM",
+  "wrapped_key": "CedoLtkZg85Q92QAs1+N+gIlJCFsOb4PBG08Plx17xuWh3utMIGAP7eSa9xM675C0P6np30RpYX4Hdz6Dq7a9PVGBO9RRscBB+6N0uxLj9+j/BJBWF8AdEfYLSDXoCK/t+puaCRVtvbnpEZNQ17HZN2RD1vhXV65UgR+xqbXU+JhvdnMyx5RBZFznjgghBlPAQD57khn9RSd3veLFWfiKbZz26lQdeA9g7CG5dWO74808dHecqqWzxfsCGvcSz7iC4qrTscUAuh1aYvqiln7vOEP8d8kTsfZW/7K7JKrQf3LtFSe6QO/3zsrbYiQV5xLweyajLP4EaD+eBs9OPxt8yQxwVRaf+z5AmRaPCMgiKsJbQ4qaput7IJvFOP3zAbQ398RBBV4VkqK/F0eiCg8s+91yi+6vMztGxS0GAJU2thKMK6JwnOBMYzNDFHr93KB2mu1KlNneLTzUA3leh/kgMruxNqMQl3i2Q9wrVdOgEPfMnl0TGDtk3FmQfk0SsHg",
+  "nonce": "O7NgjEZWdncrfrVA",
+  "tag": "9sjwM6ZV+NE1+Ihe+cC1jw==",
+  "ciphertext": "/Mam6pjHRJ1Ycs3N3zOoFwcyZtRPgiJ1vq/nMHMbImTFCI19HsjVm+mCwUcy1S1w+Lzh48Jxw0gOQ/z2G3JSt3iRwDF0XpetLC2lrikwpHVdLoDed3Vv5uJu6W29e8JE9I32IqHsIDRPXylRnqhT4TAwL6q6w+TeXk70fr4="
+}
